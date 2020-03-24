@@ -16,11 +16,16 @@ const App = (props) => {
     return random
   }
   const [selected, setSelected] = useState(rand)
+  const [votes, setVotes] = useState(Array(6).fill(0))
+
 
   
   return (
     <div>
       <p style={{height:25+'px'}}>{props.anecdotes[selected]}</p>
+      <p>has {votes[selected]} votes</p>
+
+      <Button text="vote" onClick={() => {const newVote = [...votes]; newVote[selected]+=1; setVotes(newVote)}} />
       <Button text="next anedocte" onClick={()=>setSelected(rand)} />
     </div>
   )
