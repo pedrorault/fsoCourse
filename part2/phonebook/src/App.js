@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
+import axios from 'axios';
 
 const Form = ({newName,newNumber,handleChangeName,handleChangeNumber, onSubmitPhonebook}) => {
   return (
@@ -23,7 +24,7 @@ const Results = ({persons,searchPersonField}) => {
   if(searchPersonField === ''){    
     return(
       <div>
-        {persons.map((person) =><p key={Math.random()}>{person.name} {person.number} </p>)}
+        {persons.map((person) =><p key={person.id}>{person.name} {person.number} </p>)}
       </div>
     )
   }else{
@@ -34,17 +35,19 @@ const Results = ({persons,searchPersonField}) => {
     )
   }  
 }
-
 const App = () => {
-  const [persons,setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456' },
-    { name: 'Ada Lovelace', number: '39-44-5323523' },
-    { name: 'Dan Abramov', number: '12-43-234345' },
-    { name: 'Mary Poppendieck', number: '39-23-6423122' }
-  ])
+  const [persons,setPersons] = useState([])
   const [newName,setNewName] = useState('')
   const [newNumber,setNewNumber] = useState('')
   const [searchPersonField,setSearchField] = useState('')
+  
+  const url = "http://localhost:3001/persons"
+  
+  useEffect(()=>{
+    console.log("Effect in action!!");
+    axios.get(url).then(response=>setPersons(response.data))
+    
+  }, [])
 
   const onSubmitPhonebook = (event) =>{
     event.preventDefault()
