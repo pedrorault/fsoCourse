@@ -12,7 +12,7 @@ const SearchField = ({searchField,setSearch}) => {
     </>
   )
 }
-const Results = ({allCountries,searchField}) => {
+const Results = ({allCountries,searchField,setSearch}) => {
   if(searchField === ''){ return null }
   const filterIncludedCountries =  (country) => country.name.toLowerCase().includes(searchField.toLowerCase())
   const searched = allCountries.filter(filterIncludedCountries)
@@ -31,7 +31,7 @@ const Results = ({allCountries,searchField}) => {
             <ul>
               {country.languages.map((lang,i)=><li key={i}>{lang.name}</li>)}
             </ul>
-            <img src={country.flag} alt={country.name+' Flag'} height={100} width={150}/>
+            <img style={{border:"1px solid black"}}src={country.flag} alt={country.name+' Flag'} height={100} width={150}/>
           </div>
         ))}
       </div>
@@ -40,7 +40,10 @@ const Results = ({allCountries,searchField}) => {
     return (
       <div>
         {searched.map((country,i)=>(
-          <p key={i}>{country.name}</p>
+          <div style={{paddingBottom:"10px"}}>
+          <p style={{display: 'inline', paddingRight:15+"px"}} key={i}>{country.name}</p>
+          <button onClick={() => setSearch(country.name) }>Show</button>
+          </div>
         ))}
       </div>
     )  
@@ -60,7 +63,7 @@ const App = () => {
   return (
     <div>
       <SearchField {...{searchField,setSearch}}/>
-      <Results {...{allCountries,searchField}} />
+      <Results {...{allCountries,searchField,setSearch}} />
     </div>
   )
 }
