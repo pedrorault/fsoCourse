@@ -1,7 +1,38 @@
 import React, { useState, useEffect} from 'react';
-import axios from 'axios';
+import contactService from './services/contacts'
 
-const Form = ({newName,newNumber,handleChangeName,handleChangeNumber, onSubmitPhonebook}) => {
+const Form = ({persons,setPersons}) => {
+  const [newName,setNewName] = useState('')
+  const [newNumber,setNewNumber] = useState('')
+
+  const handleChangeName = (event) => setNewName(event.target.value)  
+  const handleChangeNumber = (event) => setNewNumber(event.target.value) 
+
+  const onSubmitPhonebook = (event) =>{
+    event.preventDefault()
+    if(newName === '' || newNumber === ''){ return alert("One or more fields empty") }
+
+    const person = persons.find((person) => person.name === newName)
+    if(person !== undefined){ 
+      if(window.confirm(`${person.name} is already on the list, replace old number with a new one?`)){
+        contactService.updateContact({...person,number:newNumber}).then(
+          setPersons(persons.map(per=>{
+            if(per.id ===  person.id){
+              return {...per,number:newNumber}
+            }else{
+              return per
+            }
+          }))         
+        )
+      }      
+    }else{
+      contactService.addNewContact({name: newName, number:newNumber,id:Math.random})
+        .then(v=>setPersons(persons.concat(v)))   
+        .catch(e=>console.log(e))
+    }
+    setNewName('')
+    setNewNumber('')
+  }
   return (
     <div>
       <h3>add a new</h3>
@@ -20,53 +51,56 @@ const SearchInput = ({searchPersonField,handleSearch}) => {
   )
 }
 
-const Results = ({persons,searchPersonField}) => {
+const Results = ({persons,setPersons,searchPersonField}) => {
+  const onDelete = (name,id) => {
+    if(window.confirm(`Tem certeza que deseja deletar ${name} da lista?`)){
+      contactService.deleteContact(id).then(()=>{
+        setPersons(persons.filter((person) => person.id !== id))        
+      })
+      .catch(e=>alert(e))
+    }
+  }
+
   if(searchPersonField === ''){    
     return(
       <div>
-        {persons.map((person) =><p key={person.id}>{person.name} {person.number} </p>)}
+        {persons.map((person,i) => (
+          <p key={i}>{person.name} {person.number} 
+            <button onClick={() => onDelete(person.name,person.id)}>Delete</button> 
+          </p>
+        )
+        )}
       </div>
     )
   }else{
     return (
     <div>
-      {persons.filter( (person) => person.name.toLowerCase().includes(searchPersonField.toLowerCase())).map( (result,i) => <p key={i}>{result.name} {result.number}</p>)}
+      {persons.filter( (person) => 
+          person.name.toLowerCase().includes(
+            searchPersonField.toLowerCase())).map( 
+              (result,i) => (
+                  <p key={i}>{result.name} {result.number} <button>Delete</button></p>
+              )
+            )}
     </div>
     )
   }  
 }
 const App = () => {
-  const [persons,setPersons] = useState([])
-  const [newName,setNewName] = useState('')
-  const [newNumber,setNewNumber] = useState('')
+  const [persons,setPersons] = useState([])  
   const [searchPersonField,setSearchField] = useState('')
   
-  const url = "http://localhost:3001/persons"
-  
   useEffect(()=>{
-    console.log("Effect in action!!");
-    axios.get(url).then(response=>setPersons(response.data))
-    
+    contactService.getAllContacts().then(v => setPersons(v))   
   }, [])
 
-  const onSubmitPhonebook = (event) =>{
-    event.preventDefault()
-    if(persons.find((person) => person.name === newName)){   
-      window.alert(`${newName} is already added to phonebook`)
-    }else{
-      setPersons(persons.concat({name: newName,number: newNumber}))    
-    }
-    setNewName('')
-    setNewNumber('')
-  }
-  const handleChangeName = (event) => setNewName(event.target.value)  
-  const handleChangeNumber = (event) => setNewNumber(event.target.value)  
+   
   const handleSearch = (event) => setSearchField(event.target.value)   
   
   const propsObj = {
-    formProps: {newName,newNumber,handleChangeName,handleChangeNumber, onSubmitPhonebook},
+    formProps: {persons,setPersons},
     searchProps: {searchPersonField,handleSearch},
-    resultsProps: {persons,searchPersonField}
+    resultsProps: {persons,setPersons,searchPersonField}
   }
   
   return(
