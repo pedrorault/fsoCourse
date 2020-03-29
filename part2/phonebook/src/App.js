@@ -1,7 +1,27 @@
 import React, { useState, useEffect} from 'react';
 import contactService from './services/contacts'
 
-const Form = ({persons,setPersons}) => {
+const Notification = ({isError,message}) => {
+  if(message===undefined || message === '') {return null}
+  const base = (color) => {
+    return(
+      {
+        borderRadius: 10,
+        backgroundColor: "#b3bab5",
+        border: "3px solid",
+        borderColor: color,
+        color: color
+      }
+    )
+  }
+  const color = (isError) ? "red" : "green"
+  return(
+    <div style={base(color)}>
+     <p>{message}</p>
+    </div>
+  )
+}
+const Form = ({persons,setPersons,setAlertMsg}) => {
   const [newName,setNewName] = useState('')
   const [newNumber,setNewNumber] = useState('')
 
@@ -15,20 +35,27 @@ const Form = ({persons,setPersons}) => {
     const person = persons.find((person) => person.name === newName)
     if(person !== undefined){ 
       if(window.confirm(`${person.name} is already on the list, replace old number with a new one?`)){
-        contactService.updateContact({...person,number:newNumber}).then(
-          setPersons(persons.map(per=>{
-            if(per.id ===  person.id){
-              return {...per,number:newNumber}
-            }else{
-              return per
-            }
-          }))         
-        )
+        contactService.updateContact({...person,number:newNumber}).then(()=>{
+          setPersons(persons.map(per=>(per.id===person.id)?{...per,number:newNumber}:per))        
+          setAlertMsg({isError:false,message:`Updated ${newName}`})
+          setTimeout(()=>setAlertMsg({isError:false,message:""}),3000)        
+        })
+        .catch( (e) => {
+          setAlertMsg({isError:true,message:`${e}`})
+          setTimeout(()=>setAlertMsg({isError:false,message:""}),3000) 
+        })
       }      
     }else{
       contactService.addNewContact({name: newName, number:newNumber,id:Math.random})
-        .then(v=>setPersons(persons.concat(v)))   
-        .catch(e=>console.log(e))
+        .then(v=>{
+          setPersons(persons.concat(v))
+          setAlertMsg({isError:false,message:`Added ${newName}`})
+          setTimeout(()=>setAlertMsg({isError:false,message:""}),3000)
+        })   
+        .catch(e=>{
+          setAlertMsg({isError:true,message:`${e}`})
+          setTimeout(()=>setAlertMsg({isError:false,message:""}),3000)
+        })
     }
     setNewName('')
     setNewNumber('')
@@ -51,13 +78,18 @@ const SearchInput = ({searchPersonField,handleSearch}) => {
   )
 }
 
-const Results = ({persons,setPersons,searchPersonField}) => {
+const Results = ({persons,setPersons,searchPersonField,setAlertMsg}) => {
   const onDelete = (name,id) => {
     if(window.confirm(`Tem certeza que deseja deletar ${name} da lista?`)){
       contactService.deleteContact(id).then(()=>{
-        setPersons(persons.filter((person) => person.id !== id))        
+        setPersons(persons.filter((person) => person.id !== id)) 
+        setAlertMsg({isError:false,message:`Deleted ${name}`})
+        setTimeout(()=>setAlertMsg({isError:false,message:""}),3000)
       })
-      .catch(e=>alert(e))
+      .catch(e=>{
+        setAlertMsg({isError:true,message:`${e}`})
+        setTimeout(()=>setAlertMsg({isError:false,message:""}),3000)
+      })
     }
   }
 
@@ -89,6 +121,7 @@ const Results = ({persons,setPersons,searchPersonField}) => {
 const App = () => {
   const [persons,setPersons] = useState([])  
   const [searchPersonField,setSearchField] = useState('')
+  const [alertMsg, setAlertMsg] = useState({isError:false,message:""})
   
   useEffect(()=>{
     contactService.getAllContacts().then(v => setPersons(v))   
@@ -98,14 +131,15 @@ const App = () => {
   const handleSearch = (event) => setSearchField(event.target.value)   
   
   const propsObj = {
-    formProps: {persons,setPersons},
+    formProps: {persons,setPersons,setAlertMsg},
     searchProps: {searchPersonField,handleSearch},
-    resultsProps: {persons,setPersons,searchPersonField}
+    resultsProps: {persons,setPersons,searchPersonField,setAlertMsg}
   }
   
   return(
     <div>
       <h2>Phonebook</h2>
+      <Notification {...alertMsg} />
       <SearchInput {...propsObj.searchProps}/>
       <Form {...propsObj.formProps} />
       <h2>Numbers</h2>
