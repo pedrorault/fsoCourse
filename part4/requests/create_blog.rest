@@ -1,0 +1,9 @@
+POST http://localhost:3003/blogs
+Content-Type: application/json
+
+{
+    "title": "One class at a time",
+    "author": "Pedro",
+    "url": "http://surelynot.com/",
+    "likes": 100
+  }
