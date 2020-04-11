@@ -14,8 +14,9 @@ blogRouter.get('/:id',async (request,response) => {
 })
 
 blogRouter.post('/', async (request, response) => {
-  const blog = await new Blog(request.body)
-  response.status(201).json(blog)  
+  const blog = new Blog(request.body)
+  const savedBlog = await blog.save()  
+  response.json(savedBlog.toJSON())
 })
 blogRouter.get('*', (request,response,next) => {
   const error = new Error()

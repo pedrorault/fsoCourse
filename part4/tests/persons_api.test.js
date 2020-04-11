@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
-
 const api = supertest(app)
 
 const initialBlogs = [
@@ -22,11 +21,9 @@ const initialBlogs = [
 
 beforeEach(async () => {
   await Blog.deleteMany({})
-  let blogObj = new Blog(initialBlogs[0])
-  await blogObj.save()
-
-  blogObj = new Blog(initialBlogs[1])
-  await blogObj.save()
+  const blogObjects = initialBlogs.map(blog => new Blog(blog))
+  const promiseArray = blogObjects.map(blog => blog.save())
+  await Promise.all(promiseArray)
 })
 
 test('blogs are returned as json', async ()=>{
@@ -38,11 +35,10 @@ test('blogs are returned as json', async ()=>{
 })
 test('there are two blogs', async () => {
   const response = await api.get('/blogs')
-
   expect(response.body).toHaveLength(initialBlogs.length)
 })
 
-test.only('the first blog is about Shrek', async () => {
+test('the first blog is Something', async () => {
   const response = await api.get('/blogs')
   expect(response.body[0].title).toBe(initialBlogs[0].title)
 })
