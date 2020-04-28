@@ -1,9 +1,10 @@
 POST http://localhost:3003/blogs
 Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBlZHJvcmF1bHQiLCJpZCI6IjVlOTVmMTE0NTNhNDM0MjAwMDhlOTIwNyIsImlhdCI6MTU4NjkwNDg5Mn0._V3XLocKukaC35u9oLWFm6bt4uf43RIyHpy67ZEYiy4
 
 {
-    "title": "Long time no see",
-    "author": "Pedro",
-    "url": "http://surelynot.com/",
-    "likes": 101  
-  }
+    "title": "Using token middleware",
+    "author": "Raziel",
+    "url": "http://damn.com/",
+    "likes": 1238
+}
