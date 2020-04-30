@@ -19,7 +19,7 @@ const App = () => {
   
   return (    
     <div>
-      <Login handleSetUser={(x)=> setUser(x)} user={user}/>
+      <Login handleSetUser={setUser} user={user}/>
       {user != null ? <BlogForm /> : null}
       {user != null ? <BlogList /> : null}
     </div>
