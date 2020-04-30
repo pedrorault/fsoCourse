@@ -15,12 +15,21 @@ const App = () => {
     )  
   }, [])
 
+  useEffect(()=>{
+    const loggedUser = window.localStorage.getItem('loggedUser')
+    if(loggedUser){
+      const user = JSON.parse(loggedUser)
+      setUser(user)      
+    }
+  },[])
+
   const handleLogin = async (event) => {
     event.preventDefault()
     console.log('Logging in with ', {username,password})
     try{
       const user = await loginService.login({username,password})
       setUser(user)
+      window.localStorage.setItem('loggedUser',JSON.stringify(user))
       setUsername('')
       setPassword('')      
     }catch(exception){
@@ -41,7 +50,9 @@ const App = () => {
       )
     }else{
       return(
-        <p>{user.name} logged in <button onClick={()=>setUser(null)}>Logout</button></p>
+        <p>{user.name} logged in <button onClick={()=>{
+          window.localStorage.removeItem('loggedUser',JSON.stringify(user))          
+          setUser(null)}}>Logout</button></p>
       )
     }
     
